@@ -1,3 +1,5 @@
+from operator import attrgetter
+
 class Vendor:
     def __init__(self, inventory=None):
         self.inventory = inventory if inventory is not None else []
@@ -29,39 +31,28 @@ class Vendor:
         if len(self.inventory) == 0 or len(friend.inventory) == 0:
             return False 
         else:
-            self.swap_items(friend, self.inventory[0], friend.inventory[0])
-            return True 
+            my_first, their_first = self.inventory[0], friend.inventory[0]
+            return self.swap_items(friend, my_first, their_first)
 
-    def get_best_by_category(self, category):
-        best_item, rating = None, -1
-        for item in self.inventory:
-            if item.category == category and item.condition > rating:
-                best_item, rating = item, item.condition
-        return best_item 
+    def get_best_by_category(self, category): 
+        if len(self.get_by_category(category)) == 0:
+            return None 
+        else: 
+            items_of_this_category = self.get_by_category(category)
+            return max(items_of_this_category, key=attrgetter("condition"))
     
     def swap_best_by_category(self, other, my_priority, their_priority):
         my_best_item = self.get_best_by_category(their_priority)
         their_best_item = other.get_best_by_category(my_priority)
-
-        if my_best_item == None or their_best_item == None:
-            return False 
-        else:  
-            self.swap_items(other, my_best_item, their_best_item)
-            return True 
+        return self.swap_items(other, my_best_item, their_best_item)
 
     def get_newest_item(self):
-        newest_item, age = None, 1000000
-        for item in self.inventory:
-            if item.age < age:
-                newest_item, age = item, item.age 
-        return newest_item
+        if len(self.inventory) == 0:
+            return None 
+        else:
+            return min(self.inventory, key=attrgetter("age"))
 
     def swap_by_newest(self, other):
         my_newest_item = self.get_newest_item()
         their_newest_item = other.get_newest_item()
-
-        if my_newest_item == None or their_newest_item == None:
-            return False 
-        else: 
-            self.swap_items(other, my_newest_item, their_newest_item)
-            return True 
+        return self.swap_items(other, my_newest_item, their_newest_item)
